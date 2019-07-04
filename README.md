@@ -3,7 +3,7 @@
 This is a little API service in `golang` to handle project-versions in "semver". Easily bump major, minor and patch versions for different projects. Every bump increments the specific version part with 1. You can use it in CI/CD pipelines to handle your release version. 
 
 ## dockerhub
-[https://hub.docker.com/r/christle/vbump](https://hub.docker.com/r/christle/vbump)
+[https://hub.docker.com/r/maibornwolff/vbump](https://hub.docker.com/r/maibornwolff/vbump)
 
 ## API
 `POST /major/myproject` - bump major version for `myproject` and returns new version  
@@ -15,7 +15,7 @@ This is a little API service in `golang` to handle project-versions in "semver".
 ## use it with docker
 ```
 mkdir data # data dir for storing project files.
-docker run -p 8080:8080 -v $PWD/data:/data -d christle/vbump:latest
+docker run -p 8080:8080 -v $PWD/data:/data -d maibornwolff/vbump:1.0.0
 ```
 
 ## use it with kubernetes

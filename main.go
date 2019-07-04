@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/christle/vbump/adapter"
+	"github.com/maibornwolff/vbump/adapter"
 	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

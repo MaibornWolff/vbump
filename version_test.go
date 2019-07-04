@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/christle/vbump/adapter"
+	"github.com/maibornwolff/vbump/adapter"
 	. "github.com/onsi/gomega"
 )
 

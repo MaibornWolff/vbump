@@ -2,8 +2,8 @@ version: '3.7'
 
 services:
   vbump:
-    image: christle/vbump:latest
-    volumes: 
+    image: maibornwolff/vbump:1.0.0
+    volumes:
       - $PWD/data:/data
     build: .
     ports:
