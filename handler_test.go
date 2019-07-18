@@ -51,6 +51,34 @@ func Test_Bumb_Patch(t *testing.T) {
 	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
 }
 
+func Test_Bumb_Transient_Patch(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	fileProvider := adapter.NewMock("1.0.0", "p1")
+	version := NewVersion(fileProvider)
+	handler := NewHandler(version, nil)
+	router := handler.GetRouter()
+	res := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("POST", "/patch/transient/1.0", nil)
+	router.ServeHTTP(res, req)
+
+	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
+}
+
+func Test_Bumb_Transient_Minor(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	fileProvider := adapter.NewMock("1.0.0", "p1")
+	version := NewVersion(fileProvider)
+	handler := NewHandler(version, nil)
+	router := handler.GetRouter()
+	res := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("POST", "/minor/transient/1.0", nil)
+	router.ServeHTTP(res, req)
+
+	Ω.Expect(res.Body.String()).To(Equal("1.1"))
+}
+
 func Test_Set_Version(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 	fileProvider := adapter.NewMock("1.0.0", "p1")

@@ -246,3 +246,45 @@ func Test_Get_Version(t *testing.T) {
 
 	Ω.Expect(actual).To(Equal("1.0"))
 }
+
+func Test_Bump_Transient_Patch_Version(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	providerMock := adapter.NewMock("1.0", "1")
+	version := NewVersion(providerMock)
+
+	actual, _ := version.BumpTransientPatch("1.0")
+
+	Ω.Expect(actual).To(Equal("1.0.1"))
+	Ω.Expect(providerMock.(*adapter.FileProviderMock).VersionStored).To(Equal(false))
+}
+
+func Test_Bump_Transient_Minor_Version(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	providerMock := adapter.NewMock("1.0", "1")
+	version := NewVersion(providerMock)
+
+	actual, _ := version.BumpTransientMinor("1.0")
+
+	Ω.Expect(actual).To(Equal("1.1"))
+	Ω.Expect(providerMock.(*adapter.FileProviderMock).VersionStored).To(Equal(false))
+}
+
+func Test_Bump_Transient_Patch_Version_With_Invalid_Given_Version(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	providerMock := adapter.NewMock("1.0", "1")
+	version := NewVersion(providerMock)
+
+	_, err := version.BumpTransientPatch("a1.0a")
+
+	Ω.Expect(err).NotTo(BeNil())
+}
+
+func Test_Bump_Transient_Minor_Version_With_Invalid_Given_Version(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	providerMock := adapter.NewMock("1.0", "1")
+	version := NewVersion(providerMock)
+
+	_, err := version.BumpTransientMinor("a1.0a")
+
+	Ω.Expect(err).NotTo(BeNil())
+}

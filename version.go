@@ -8,16 +8,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+//Version bumps major, minor, patch part of a given project
 type Version struct {
 	fileProvider adapter.IFileProvider
 }
 
+//NewVersion constructs new fileprovider
 func NewVersion(provider adapter.IFileProvider) *Version {
 	return &Version{
 		fileProvider: provider,
 	}
 }
 
+//BumpMajor bumps major version for given project
 func (v *Version) BumpMajor(project string) (string, error) {
 	currentVersion, err := v.fileProvider.ReadVersion(project)
 	if err != nil {
@@ -34,6 +37,7 @@ func (v *Version) BumpMajor(project string) (string, error) {
 	return newVersion, nil
 }
 
+//BumpMinor bumps minor version for given project
 func (v *Version) BumpMinor(project string) (string, error) {
 	currentVersion, err := v.fileProvider.ReadVersion(project)
 	if err != nil {
@@ -53,6 +57,7 @@ func (v *Version) BumpMinor(project string) (string, error) {
 	return newVersion, nil
 }
 
+//BumpPatch bumps patch version for given project
 func (v *Version) BumpPatch(project string) (string, error) {
 	currentVersion, err := v.fileProvider.ReadVersion(project)
 	if err != nil {
@@ -73,6 +78,7 @@ func (v *Version) BumpPatch(project string) (string, error) {
 	return newVersion, err
 }
 
+//SetVersion sets the current given version for the given project
 func (v *Version) SetVersion(project string, version string) (string, error) {
 	isValidated := validateVersion(version)
 	if !isValidated {
@@ -87,6 +93,7 @@ func (v *Version) SetVersion(project string, version string) (string, error) {
 	return version, err
 }
 
+//GetVersion returns current version for given project
 func (v *Version) GetVersion(project string) (string, error) {
 	version, err := v.fileProvider.ReadVersion(project)
 	if err != nil {
@@ -94,6 +101,38 @@ func (v *Version) GetVersion(project string) (string, error) {
 	}
 
 	return version, err
+}
+
+//BumpTransientPatch bumps only the patch part on given version without change any project
+func (v *Version) BumpTransientPatch(version string) (string, error) {
+	isValidated := validateVersion(version)
+	if !isValidated {
+		return "", errors.Errorf("%v is not a valid version", version)
+	}
+
+	major, minor, patch := extractVersionParts(version)
+	newPatch := convertAndInc(patch)
+	major = initEmptyPartToZero(major)
+	minor = initEmptyPartToZero(minor)
+	newVersion := formatVersion(major, minor, newPatch)
+
+	return newVersion, nil
+}
+
+//BumpTransientMinor bumps only the minor part on given version without change any project
+func (v *Version) BumpTransientMinor(version string) (string, error) {
+	isValidated := validateVersion(version)
+	if !isValidated {
+		return "", errors.Errorf("%v is not a valid version", version)
+	}
+
+	major, minor, patch := extractVersionParts(version)
+	newMinor := convertAndInc(minor)
+	major = initEmptyPartToZero(major)
+	patch = resetPart(patch)
+	newVersion := formatVersion(major, newMinor, patch)
+
+	return newVersion, nil
 }
 
 func validateVersion(version string) bool {
