@@ -19,17 +19,21 @@ spec:
         app.kubernetes.io/name: {{ include "vbump.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+    {{- if .Values.persistence.enabled }}
       volumes:
         - name: pv-storage
           persistentVolumeClaim:
             claimName: {{ template "vbump.fullname" . }}
+    {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.persistence.enabled }}
           volumeMounts:
           - mountPath: "/data"
             name: pv-storage
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080
