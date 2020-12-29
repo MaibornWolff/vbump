@@ -15,9 +15,9 @@ var (
 	numberOfDeployments = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "vbump_deployments_total",
-			Help: "Number of deployments tracked by vbump",
+			Help: "Number of deployments tracked by vbump, labelled with projectname and semVer element",
 		},
-		[]string{"project"},
+		[]string{"project", "element"},
 	)
 )
 

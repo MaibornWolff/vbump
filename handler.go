@@ -52,7 +52,7 @@ func (handler *Handler) OnHealth(w http.ResponseWriter, r *http.Request) {
 //OnMajor is a handler for bumping the major part for a given project
 func (handler *Handler) OnMajor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	numberOfDeployments.With(prometheus.Labels{"project": vars["project"]}).Inc()
+	numberOfDeployments.With(prometheus.Labels{"project": vars["project"], "element": "major"}).Inc()
 	version, err := handler.version.BumpMajor(vars["project"])
 	if err != nil {
 		handler.logger.Error(err)
@@ -68,7 +68,7 @@ func (handler *Handler) OnMajor(w http.ResponseWriter, r *http.Request) {
 //OnMinor is a handler for bumping the minor part for a given project
 func (handler *Handler) OnMinor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	numberOfDeployments.With(prometheus.Labels{"project": vars["project"]}).Inc()
+	numberOfDeployments.With(prometheus.Labels{"project": vars["project"], "element": "minor"}).Inc()
 	version, err := handler.version.BumpMinor(vars["project"])
 	if err != nil {
 		handler.logger.Error(err)
@@ -84,7 +84,7 @@ func (handler *Handler) OnMinor(w http.ResponseWriter, r *http.Request) {
 //OnPatch is a handler for bump the patch part for a given project
 func (handler *Handler) OnPatch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	numberOfDeployments.With(prometheus.Labels{"project": vars["project"]}).Inc()
+	numberOfDeployments.With(prometheus.Labels{"project": vars["project"], "element": "patch"}).Inc()
 	version, err := handler.version.BumpPatch(vars["project"])
 	if err != nil {
 		handler.logger.Error(err)
