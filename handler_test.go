@@ -51,6 +51,38 @@ func Test_Bumb_Patch(t *testing.T) {
 	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
 }
 
+func Test_Number_Of_Deployments_Metric(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	fileProvider := adapter.NewMock("init", "init")
+	version := NewVersion(fileProvider)
+	handler := NewHandler(version, nil)
+	router := handler.GetRouter()
+	res := httptest.NewRecorder()
+	metrics, _ := http.NewRequest("GET", "/metrics", nil)
+
+	// test for p1
+	patchp1, _ := http.NewRequest("POST", "/patch/p1", nil)
+	minorp1, _ := http.NewRequest("POST", "/minor/p1", nil)
+	majorp1, _ := http.NewRequest("POST", "/major/p1", nil)
+
+	router.ServeHTTP(res, patchp1)
+	router.ServeHTTP(res, minorp1)
+	router.ServeHTTP(res, majorp1)
+	router.ServeHTTP(res, metrics)
+
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{project=\"p1\"} 3"))
+
+	// test for p2
+	patchp2, _ := http.NewRequest("POST", "/patch/p2", nil)
+	minorp2, _ := http.NewRequest("POST", "/minor/p2", nil)
+	majorp2, _ := http.NewRequest("POST", "/major/p2", nil)
+	router.ServeHTTP(res, patchp2)
+	router.ServeHTTP(res, minorp2)
+	router.ServeHTTP(res, majorp2)
+	router.ServeHTTP(res, metrics)
+
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{project=\"p2\"} 3"))
+}
 func Test_Bumb_Transient_Patch(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 	fileProvider := adapter.NewMock("1.0.0", "p1")

@@ -6,9 +6,24 @@ import (
 	"time"
 
 	"github.com/maibornwolff/vbump/adapter"
+	"github.com/prometheus/client_golang/prometheus"
 	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
+
+var (
+	numberOfDeployments = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "vbump_deployments_total",
+			Help: "Number of deployments tracked by vbump",
+		},
+		[]string{"project"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(numberOfDeployments)
+}
 
 func main() {
 	logger := logrus.New()
