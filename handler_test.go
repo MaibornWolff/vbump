@@ -51,7 +51,7 @@ func Test_Bumb_Patch(t *testing.T) {
 	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
 }
 
-func Test_Number_Of_Deployments_Metric(t *testing.T) {
+func Test_Number_Of_Vbump_Metric(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 	fileProvider := adapter.NewMock("init", "init")
 	version := NewVersion(fileProvider)
@@ -70,9 +70,9 @@ func Test_Number_Of_Deployments_Metric(t *testing.T) {
 	router.ServeHTTP(res, majorp1)
 	router.ServeHTTP(res, metrics)
 
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"patch\",project=\"prom1\"} 1"))
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"minor\",project=\"prom1\"} 1"))
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"major\",project=\"prom1\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"patch\",project=\"prom1\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"minor\",project=\"prom1\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"major\",project=\"prom1\"} 1"))
 
 	// test for prom2
 	patchp2, _ := http.NewRequest("POST", "/patch/prom2", nil)
@@ -84,9 +84,9 @@ func Test_Number_Of_Deployments_Metric(t *testing.T) {
 	router.ServeHTTP(res, majorp2)
 	router.ServeHTTP(res, metrics)
 
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"patch\",project=\"prom2\"} 1"))
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"minor\",project=\"prom2\"} 1"))
-	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_deployments_total{element=\"major\",project=\"prom2\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"patch\",project=\"prom2\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"minor\",project=\"prom2\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"major\",project=\"prom2\"} 1"))
 }
 func Test_Bumb_Transient_Patch(t *testing.T) {
 	Ω := NewGomegaWithT(t)

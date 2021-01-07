@@ -12,17 +12,17 @@ import (
 )
 
 var (
-	numberOfDeployments = prometheus.NewCounterVec(
+	numberOfBumps = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "vbump_deployments_total",
-			Help: "Number of deployments tracked by vbump, labelled with projectname and semVer element",
+			Name: "vbump_bumps_total",
+			Help: "Number of bumps tracked by vbump, labelled with projectname and semVer element",
 		},
 		[]string{"project", "element"},
 	)
 )
 
 func init() {
-	prometheus.MustRegister(numberOfDeployments)
+	prometheus.MustRegister(numberOfBumps)
 }
 
 func main() {
