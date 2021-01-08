@@ -6,9 +6,24 @@ import (
 	"time"
 
 	"github.com/maibornwolff/vbump/adapter"
+	"github.com/prometheus/client_golang/prometheus"
 	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
+
+var (
+	numberOfBumps = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "vbump_bumps_total",
+			Help: "Number of bumps tracked by vbump, labelled with projectname and semVer element",
+		},
+		[]string{"project", "element"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(numberOfBumps)
+}
 
 func main() {
 	logger := logrus.New()

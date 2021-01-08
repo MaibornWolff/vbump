@@ -51,6 +51,43 @@ func Test_Bumb_Patch(t *testing.T) {
 	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
 }
 
+func Test_Number_Of_Vbump_Metric(t *testing.T) {
+	Ω := NewGomegaWithT(t)
+	fileProvider := adapter.NewMock("init", "init")
+	version := NewVersion(fileProvider)
+	handler := NewHandler(version, nil)
+	router := handler.GetRouter()
+	res := httptest.NewRecorder()
+	metrics, _ := http.NewRequest("GET", "/metrics", nil)
+
+	// test for prom1
+	patchp1, _ := http.NewRequest("POST", "/patch/prom1", nil)
+	minorp1, _ := http.NewRequest("POST", "/minor/prom1", nil)
+	majorp1, _ := http.NewRequest("POST", "/major/prom1", nil)
+
+	router.ServeHTTP(res, patchp1)
+	router.ServeHTTP(res, minorp1)
+	router.ServeHTTP(res, majorp1)
+	router.ServeHTTP(res, metrics)
+
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"patch\",project=\"prom1\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"minor\",project=\"prom1\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"major\",project=\"prom1\"} 1"))
+
+	// test for prom2
+	patchp2, _ := http.NewRequest("POST", "/patch/prom2", nil)
+	minorp2, _ := http.NewRequest("POST", "/minor/prom2", nil)
+	majorp2, _ := http.NewRequest("POST", "/major/prom2", nil)
+
+	router.ServeHTTP(res, patchp2)
+	router.ServeHTTP(res, minorp2)
+	router.ServeHTTP(res, majorp2)
+	router.ServeHTTP(res, metrics)
+
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"patch\",project=\"prom2\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"minor\",project=\"prom2\"} 1"))
+	Ω.Expect(res.Body.String()).To(ContainSubstring("vbump_bumps_total{element=\"major\",project=\"prom2\"} 1"))
+}
 func Test_Bumb_Transient_Patch(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 	fileProvider := adapter.NewMock("1.0.0", "p1")

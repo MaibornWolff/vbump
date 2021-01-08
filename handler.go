@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,6 +38,7 @@ func (handler *Handler) GetRouter() http.Handler {
 	r.HandleFunc("/version/{project}/{version}", handler.OnSetVersion).Methods("POST")
 	r.HandleFunc("/version/{project}", handler.OnGetVersion).Methods("GET")
 	r.HandleFunc("/", handler.OnHealth)
+	r.Handle("/metrics", promhttp.Handler())
 
 	return r
 }
@@ -56,6 +59,7 @@ func (handler *Handler) OnMajor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "major"}).Inc()
 	handler.logger.Infof("bump major version to %v on project %v", version, vars["project"])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(version))
@@ -71,6 +75,7 @@ func (handler *Handler) OnMinor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "minor"}).Inc()
 	handler.logger.Infof("bump minor version to %v on project %v", version, vars["project"])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(version))
@@ -86,6 +91,7 @@ func (handler *Handler) OnPatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "patch"}).Inc()
 	handler.logger.Infof("bump patch version to %v on project %v", version, vars["project"])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(version))
