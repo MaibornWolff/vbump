@@ -5,7 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/maibornwolff/vbump/adapter"
+	"maibornwolff/vbump/adapter"
+
 	. "github.com/onsi/gomega"
 )
 
