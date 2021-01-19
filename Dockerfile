@@ -12,5 +12,5 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/src/github.com/maibornwolff/vbump/vbump /vbump
 RUN mkdir /data
 ENTRYPOINT ./vbump -d data
-LABEL Name=vbump Version=1.1.0
+LABEL Name=vbump Version=1.2.0
 EXPOSE 8080
