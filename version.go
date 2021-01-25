@@ -4,7 +4,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/maibornwolff/vbump/adapter"
+	"maibornwolff/vbump/adapter"
+
 	"github.com/pkg/errors"
 )
 

@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maibornwolff/vbump/adapter"
+	"maibornwolff/vbump/adapter"
+
 	"github.com/prometheus/client_golang/prometheus"
 	logrus "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
