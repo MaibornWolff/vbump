@@ -1,16 +1,17 @@
-#build stage
-FROM golang:alpine AS builder
-WORKDIR /go/src/github.com/maibornwolff/vbump
+FROM golang:alpine as builder
+RUN apk update && apk add build-base
+RUN mkdir /build
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-RUN apk add --no-cache -v git gcc libc-dev
-RUN go get -v ./... && go get "github.com/onsi/gomega"
-RUN go test -v
-RUN go build
-#final stage
+RUN go build .
+RUN go test -v ./...
+
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
-COPY --from=builder /go/src/github.com/maibornwolff/vbump/vbump /vbump
+COPY --from=builder /build/vbump /vbump
 RUN mkdir /data
 ENTRYPOINT ./vbump -d data
-LABEL Name=vbump Version=1.2.0
+LABEL Name=vbump Version=1.3.0
 EXPOSE 8080
