@@ -97,7 +97,7 @@ func Test_Bumb_Transient_Patch(t *testing.T) {
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("POST", "/patch/transient/1.0", nil)
+	req, _ := http.NewRequest("POST", "/transient/patch/1.0", nil)
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Body.String()).To(Equal("1.0.1"))
@@ -111,7 +111,7 @@ func Test_Bumb_Transient_Minor(t *testing.T) {
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("POST", "/minor/transient/1.0", nil)
+	req, _ := http.NewRequest("POST", "/transient/minor/1.0", nil)
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Body.String()).To(Equal("1.1"))
@@ -157,7 +157,6 @@ func Test_Set_Version_With_Validation_Error(t *testing.T) {
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Code).To(Equal(422))
-	Ω.Expect(res.Body.String()).To(Equal("3.1.2. is not a valid version"))
 }
 
 func Test_Bump_Major_With_Invalid_Path(t *testing.T) {
