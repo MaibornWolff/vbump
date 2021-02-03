@@ -1,30 +1,24 @@
 package main
 
 import (
-	"maibornwolff/vbump/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
+	"maibornwolff/vbump/service"
 )
 
 // Handler for handling http routes
 type Handler struct {
 	versionManager *service.VersionManager
-	logger         *log.Logger
 }
 
 // NewHandler constructs a new handler
-func NewHandler(versionManager *service.VersionManager, logger *log.Logger) *Handler {
-	if logger == nil {
-		logger = log.New()
-	}
-
+func NewHandler(versionManager *service.VersionManager) *Handler {
 	return &Handler{
 		versionManager: versionManager,
-		logger:         logger,
 	}
 }
 
@@ -34,7 +28,7 @@ func (handler *Handler) LoggerMiddleware() gin.HandlerFunc {
 		c.Next()
 		err := c.Errors.Last()
 		if err != nil {
-			handler.logger.Error(err)
+			log.Error().Err(err)
 		}
 	}
 }
@@ -73,7 +67,7 @@ func (handler *Handler) OnMajor(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "major"}).Inc()
-	handler.logger.Infof("bump major version to %v on project %v", version, project)
+	log.Info().Str("version", version.String()).Str("project", project).Msg("Bumped major version")
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -87,7 +81,7 @@ func (handler *Handler) OnMinor(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "minor"}).Inc()
-	handler.logger.Infof("bump minor version to %v on project %v", version, project)
+	log.Info().Str("version", version.String()).Str("project", project).Msg("Bumped minor version")
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -101,7 +95,7 @@ func (handler *Handler) OnPatch(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "patch"}).Inc()
-	handler.logger.Infof("bump patch version to %v on project %v", version, project)
+	log.Info().Str("version", version.String()).Str("project", project).Msg("Bumped patch version")
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -115,7 +109,7 @@ func (handler *Handler) OnSetVersion(context *gin.Context) {
 		return
 	}
 
-	handler.logger.Infof("set version explicitly to %v on project %v", version, project)
+	log.Info().Str("version", version).Str("project", project).Msg("Set version explicitly")
 	context.String(http.StatusOK, "%s", version)
 }
 
@@ -128,7 +122,7 @@ func (handler *Handler) OnGetVersion(context *gin.Context) {
 		return
 	}
 
-	handler.logger.Infof("get version from project %v", project)
+	log.Info().Str("project", project).Msg("Got version")
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -141,7 +135,7 @@ func (handler *Handler) OnTransientPatch(context *gin.Context) {
 		return
 	}
 
-	handler.logger.Infof("bump transient patch version to %v", bumpedVersion)
+	log.Info().Str("version", bumpedVersion.String()).Msg("Bumped patch version transiently")
 	context.String(http.StatusOK, "%s", bumpedVersion.String())
 }
 
@@ -154,6 +148,6 @@ func (handler *Handler) OnTransientMinor(context *gin.Context) {
 		return
 	}
 
-	handler.logger.Infof("bump transient minor version to %v", bumpedVersion)
+	log.Info().Str("version", bumpedVersion.String()).Msg("Bumped minor version transiently")
 	context.String(http.StatusOK, "%s", bumpedVersion.String())
 }
