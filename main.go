@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
+	"maibornwolff/vbump/service"
 	"net/http"
 	"time"
 
-	"maibornwolff/vbump/adapter"
-
 	"github.com/prometheus/client_golang/prometheus"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"maibornwolff/vbump/adapter"
 )
 
 var (
@@ -28,27 +28,26 @@ func init() {
 
 func main() {
 	logger := logrus.New()
-	logger.Formatter = &logrus.JSONFormatter{}
-	w := logger.Writer()
-	defer w.Close()
-
-	log.SetOutput(w)
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	loggerWriter := logger.Writer()
+	log.SetOutput(loggerWriter)
+	defer loggerWriter.Close()
 
 	listenAddr := kingpin.Flag("listen", "Address to listen on.").Short('l').Default(":8080").String()
-	datadir := kingpin.Flag("datadir", "Directory path for storing version files (must exist).").Short('d').Required().String()
-
+	dataDir := kingpin.Flag("datadir", "Directory path for storing version files (must exist).").Short('d').Required().String()
 	kingpin.Parse()
+
 	logger.Info("Server is starting...")
 
-	fileProvider := adapter.New(*datadir)
-	version := NewVersion(fileProvider)
-	handler := NewHandler(version, logger)
+	fileProvider := adapter.NewFileProvider(*dataDir)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager, logger)
 	router := handler.GetRouter()
 
 	server := &http.Server{
 		Addr:         *listenAddr,
 		Handler:      router,
-		ErrorLog:     log.New(w, "", 0),
+		ErrorLog:     log.New(loggerWriter, "", 0),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,

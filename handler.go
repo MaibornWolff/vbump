@@ -1,160 +1,159 @@
 package main
 
 import (
+	"maibornwolff/vbump/service"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
-//Handler for handling http routes
+// Handler for handling http routes
 type Handler struct {
-	version *Version
-	logger  *log.Logger
+	versionManager *service.VersionManager
+	logger         *log.Logger
 }
 
-//NewHandler constructs a new handler
-func NewHandler(version *Version, logger *log.Logger) *Handler {
+// NewHandler constructs a new handler
+func NewHandler(versionManager *service.VersionManager, logger *log.Logger) *Handler {
 	if logger == nil {
 		logger = log.New()
 	}
 
 	return &Handler{
-		version: version,
-		logger:  logger,
+		versionManager: versionManager,
+		logger:         logger,
 	}
 }
 
-//GetRouter configure all routes
-func (handler *Handler) GetRouter() http.Handler {
-	r := mux.NewRouter()
-	r.HandleFunc("/major/{project}", handler.OnMajor).Methods("POST")
-	r.HandleFunc("/minor/{project}", handler.OnMinor).Methods("POST")
-	r.HandleFunc("/patch/{project}", handler.OnPatch).Methods("POST")
-	r.HandleFunc("/minor/transient/{version}", handler.OnTransientMinor).Methods("POST")
-	r.HandleFunc("/patch/transient/{version}", handler.OnTransientPatch).Methods("POST")
-	r.HandleFunc("/version/{project}/{version}", handler.OnSetVersion).Methods("POST")
-	r.HandleFunc("/version/{project}", handler.OnGetVersion).Methods("GET")
-	r.HandleFunc("/", handler.OnHealth)
-	r.Handle("/metrics", promhttp.Handler())
+// LoggerMiddleware logs the last error
+func (handler *Handler) LoggerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		err := c.Errors.Last()
+		if err != nil {
+			handler.logger.Error(err)
+		}
+	}
+}
+
+// GetRouter configures all routes
+func (handler *Handler) GetRouter() *gin.Engine {
+	r := gin.New()
+	r.Use(handler.LoggerMiddleware())
+	gin.SetMode(gin.ReleaseMode)
+
+	r.POST("/major/:project", handler.OnMajor)
+	r.POST("/minor/:project", handler.OnMinor)
+	r.POST("/patch/:project", handler.OnPatch)
+	r.POST("/transient/minor/:version", handler.OnTransientMinor)
+	r.POST("/transient/patch/:version", handler.OnTransientPatch)
+	r.POST("/version/:project/:version", handler.OnSetVersion)
+	r.GET("/version/:project", handler.OnGetVersion)
+	r.GET("/", handler.OnHealth)
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return r
 }
 
-//OnHealth is a handler for a health check
-func (handler *Handler) OnHealth(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("hello from vbump!"))
+// OnHealth is a handler for a health check
+func (handler *Handler) OnHealth(context *gin.Context) {
+	context.String(http.StatusOK, "hello from vbump!")
 }
 
-//OnMajor is a handler for bumping the major part for a given project
-func (handler *Handler) OnMajor(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.BumpMajor(vars["project"])
+// OnMajor is a handler for bumping the major part for a given project
+func (handler *Handler) OnMajor(context *gin.Context) {
+	project := context.Param("project")
+	version, err := handler.versionManager.BumpMajor(project)
 	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		_ = context.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "major"}).Inc()
-	handler.logger.Infof("bump major version to %v on project %v", version, vars["project"])
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	numberOfBumps.With(prometheus.Labels{"project": project, "element": "major"}).Inc()
+	handler.logger.Infof("bump major version to %v on project %v", version, project)
+	context.String(http.StatusOK, "%s", version.String())
 }
 
-//OnMinor is a handler for bumping the minor part for a given project
-func (handler *Handler) OnMinor(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.BumpMinor(vars["project"])
+// OnMinor is a handler for bumping the minor part for a given project
+func (handler *Handler) OnMinor(context *gin.Context) {
+	project := context.Param("project")
+	version, err := handler.versionManager.BumpMinor(project)
 	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		_ = context.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "minor"}).Inc()
-	handler.logger.Infof("bump minor version to %v on project %v", version, vars["project"])
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	numberOfBumps.With(prometheus.Labels{"project": project, "element": "minor"}).Inc()
+	handler.logger.Infof("bump minor version to %v on project %v", version, project)
+	context.String(http.StatusOK, "%s", version.String())
 }
 
-//OnPatch is a handler for bump the patch part for a given project
-func (handler *Handler) OnPatch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.BumpPatch(vars["project"])
+// OnPatch is a handler for bumping the patch part for a given project
+func (handler *Handler) OnPatch(context *gin.Context) {
+	project := context.Param("project")
+	version, err := handler.versionManager.BumpPatch(project)
 	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		_ = context.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	numberOfBumps.With(prometheus.Labels{"project": vars["project"], "element": "patch"}).Inc()
-	handler.logger.Infof("bump patch version to %v on project %v", version, vars["project"])
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	numberOfBumps.With(prometheus.Labels{"project": project, "element": "patch"}).Inc()
+	handler.logger.Infof("bump patch version to %v on project %v", version, project)
+	context.String(http.StatusOK, "%s", version.String())
 }
 
-//OnSetVersion is a handler for setting the version for a given project
-func (handler *Handler) OnSetVersion(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.SetVersion(vars["project"], vars["version"])
+// OnSetVersion is a handler for setting the version for a given project
+func (handler *Handler) OnSetVersion(context *gin.Context) {
+	project := context.Param("project")
+	version := context.Param("version")
+	_, err := handler.versionManager.SetVersion(project, version)
 	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	handler.logger.Infof("set version explicitly to %v on project %v", version, vars["project"])
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
-}
-
-//OnGetVersion is a handler for getting the version for a given project
-func (handler *Handler) OnGetVersion(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.GetVersion(vars["project"])
-	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	handler.logger.Infof("get version from project %v", vars["project"])
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
-}
-
-//OnTransientPatch is a handler for a transient patch bumps
-func (handler *Handler) OnTransientPatch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.BumpTransientPatch(vars["version"])
-	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		_ = context.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	handler.logger.Infof("bump transient patch version to %v", version)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	handler.logger.Infof("set version explicitly to %v on project %v", version, project)
+	context.String(http.StatusOK, "%s", version)
 }
 
-//OnTransientMinor is a handler for a transient minor bumps
-func (handler *Handler) OnTransientMinor(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	version, err := handler.version.BumpTransientMinor(vars["version"])
+// OnGetVersion is a handler for getting the version for a given project
+func (handler *Handler) OnGetVersion(context *gin.Context) {
+	project := context.Param("project")
+	version, err := handler.versionManager.GetVersion(project)
 	if err != nil {
-		handler.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		_ = context.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
-	handler.logger.Infof("bump transient minor version to %v", version)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	handler.logger.Infof("get version from project %v", project)
+	context.String(http.StatusOK, "%s", version.String())
+}
+
+// OnTransientPatch is a handler for a transient patch bump
+func (handler *Handler) OnTransientPatch(context *gin.Context) {
+	version := context.Param("version")
+	bumpedVersion, err := handler.versionManager.BumpTransientPatch(version)
+	if err != nil {
+		_ = context.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	handler.logger.Infof("bump transient patch version to %v", bumpedVersion)
+	context.String(http.StatusOK, "%s", bumpedVersion.String())
+}
+
+// OnTransientMinor is a handler for a transient minor bump
+func (handler *Handler) OnTransientMinor(context *gin.Context) {
+	version := context.Param("version")
+	bumpedVersion, err := handler.versionManager.BumpTransientMinor(version)
+	if err != nil {
+		_ = context.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	handler.logger.Infof("bump transient minor version to %v", bumpedVersion)
+	context.String(http.StatusOK, "%s", bumpedVersion.String())
 }

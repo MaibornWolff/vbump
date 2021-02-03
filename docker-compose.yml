@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   vbump:
-    image: maibornwolff/vbump:1.2.0
+    image: maibornwolff/vbump:1.3.0
     volumes:
       - $PWD/data:/data
     build: .

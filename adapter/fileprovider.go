@@ -6,46 +6,54 @@ import (
 	"path"
 
 	"github.com/pkg/errors"
+	"maibornwolff/vbump/model"
 )
 
-type IFileProvider interface {
-	ReadVersion(project string) (string, error)
-	StoreVersion(project string, version string) error
-}
-
+// FileProvider reads and writes version data from/to files
 type FileProvider struct {
 	basePath string
 }
 
-func New(basePath string) IFileProvider {
+// NewFileProvider constructs a new file provider
+func NewFileProvider(basePath string) StorageProvider {
 	return &FileProvider{basePath: basePath}
 }
 
-func (provider *FileProvider) ReadVersion(project string) (string, error) {
+// ReadVersion reads the given project's version from a file
+func (provider *FileProvider) ReadVersion(project string) (version model.Version, err error) {
 	filename := path.Join(provider.basePath, project)
 
-	if _, err := os.Stat(provider.basePath); os.IsNotExist(err) {
-		return "", errors.Wrapf(err, "Basedirectory %v not exist", provider.basePath)
+	if _, err = os.Stat(provider.basePath); os.IsNotExist(err) {
+		return version, errors.Wrapf(err, "Base directory %v does not exist", provider.basePath)
 	}
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return "", nil
+		return version, errors.Wrapf(err, "File %v does not exist", filename)
 	}
 
-	versiontext, err := ioutil.ReadFile(filename)
+	versionData, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return "", errors.Wrapf(err, "Read version from file %v failed", filename)
+		return version, errors.Wrapf(err, "Failed to read version from file %v", filename)
 	}
 
-	return string(versiontext[:]), nil
+	version, err = model.FromVersionString(string(versionData))
+	if err != nil {
+		return version, errors.Wrapf(err, "Failed to convert version")
+	}
+
+	return
 }
 
-func (provider *FileProvider) StoreVersion(project string, version string) error {
-	text := []byte(version)
+// StoreVersion writes the given project's version to a file
+func (provider *FileProvider) StoreVersion(project string, version model.Version) error {
 	filename := path.Join(provider.basePath, project)
-	err := ioutil.WriteFile(filename, text, 0644)
+
+	versionString := version.String()
+	versionBytes := []byte(versionString)
+
+	err := ioutil.WriteFile(filename, versionBytes, 0644)
 	if err != nil {
-		return errors.Wrap(err, "Store version in file failed")
+		return errors.Wrap(err, "Failed to store version in file")
 	}
 
 	return nil
