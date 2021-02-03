@@ -17,13 +17,13 @@ type Handler struct {
 }
 
 // NewHandler constructs a new handler
-func NewHandler(version *service.VersionManager, logger *log.Logger) *Handler {
+func NewHandler(versionManager *service.VersionManager, logger *log.Logger) *Handler {
 	if logger == nil {
 		logger = log.New()
 	}
 
 	return &Handler{
-		versionManager: version,
+		versionManager: versionManager,
 		logger:         logger,
 	}
 }
@@ -48,10 +48,10 @@ func (handler *Handler) GetRouter() *gin.Engine {
 	r.POST("/major/:project", handler.OnMajor)
 	r.POST("/minor/:project", handler.OnMinor)
 	r.POST("/patch/:project", handler.OnPatch)
-	r.POST("/transient/minor/:versionManager", handler.OnTransientMinor)
-	r.POST("/transient/patch/:versionManager", handler.OnTransientPatch)
-	r.POST("/versionManager/:project/:versionManager", handler.OnSetVersion)
-	r.GET("/versionManager/:project", handler.OnGetVersion)
+	r.POST("/transient/minor/:version", handler.OnTransientMinor)
+	r.POST("/transient/patch/:version", handler.OnTransientPatch)
+	r.POST("/version/:project/:version", handler.OnSetVersion)
+	r.GET("/version/:project", handler.OnGetVersion)
 	r.GET("/", handler.OnHealth)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
@@ -73,7 +73,7 @@ func (handler *Handler) OnMajor(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "major"}).Inc()
-	handler.logger.Infof("bump major versionManager to %v on project %v", version, project)
+	handler.logger.Infof("bump major version to %v on project %v", version, project)
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -87,7 +87,7 @@ func (handler *Handler) OnMinor(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "minor"}).Inc()
-	handler.logger.Infof("bump minor versionManager to %v on project %v", version, project)
+	handler.logger.Infof("bump minor version to %v on project %v", version, project)
 	context.String(http.StatusOK, "%s", version.String())
 }
 
@@ -101,25 +101,25 @@ func (handler *Handler) OnPatch(context *gin.Context) {
 	}
 
 	numberOfBumps.With(prometheus.Labels{"project": project, "element": "patch"}).Inc()
-	handler.logger.Infof("bump patch versionManager to %v on project %v", version, project)
+	handler.logger.Infof("bump patch version to %v on project %v", version, project)
 	context.String(http.StatusOK, "%s", version.String())
 }
 
-// OnSetVersion is a handler for setting the versionManager for a given project
+// OnSetVersion is a handler for setting the version for a given project
 func (handler *Handler) OnSetVersion(context *gin.Context) {
 	project := context.Param("project")
-	version := context.Param("versionManager")
+	version := context.Param("version")
 	_, err := handler.versionManager.SetVersion(project, version)
 	if err != nil {
 		_ = context.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	handler.logger.Infof("set versionManager explicitly to %v on project %v", version, project)
+	handler.logger.Infof("set version explicitly to %v on project %v", version, project)
 	context.String(http.StatusOK, "%s", version)
 }
 
-// OnGetVersion is a handler for getting the versionManager for a given project
+// OnGetVersion is a handler for getting the version for a given project
 func (handler *Handler) OnGetVersion(context *gin.Context) {
 	project := context.Param("project")
 	version, err := handler.versionManager.GetVersion(project)
@@ -128,32 +128,32 @@ func (handler *Handler) OnGetVersion(context *gin.Context) {
 		return
 	}
 
-	handler.logger.Infof("get versionManager from project %v", project)
+	handler.logger.Infof("get version from project %v", project)
 	context.String(http.StatusOK, "%s", version.String())
 }
 
 // OnTransientPatch is a handler for a transient patch bump
 func (handler *Handler) OnTransientPatch(context *gin.Context) {
-	version := context.Param("versionManager")
+	version := context.Param("version")
 	bumpedVersion, err := handler.versionManager.BumpTransientPatch(version)
 	if err != nil {
 		_ = context.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	handler.logger.Infof("bump transient patch versionManager to %v", bumpedVersion)
+	handler.logger.Infof("bump transient patch version to %v", bumpedVersion)
 	context.String(http.StatusOK, "%s", bumpedVersion.String())
 }
 
 // OnTransientMinor is a handler for a transient minor bump
 func (handler *Handler) OnTransientMinor(context *gin.Context) {
-	version := context.Param("versionManager")
+	version := context.Param("version")
 	bumpedVersion, err := handler.versionManager.BumpTransientMinor(version)
 	if err != nil {
 		_ = context.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	handler.logger.Infof("bump transient minor versionManager to %v", bumpedVersion)
+	handler.logger.Infof("bump transient minor version to %v", bumpedVersion)
 	context.String(http.StatusOK, "%s", bumpedVersion.String())
 }

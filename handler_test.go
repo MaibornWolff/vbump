@@ -134,7 +134,7 @@ func TestSetVersion(t *testing.T) {
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("POST", "/versionManager/p1/3.1.2", nil)
+	req, _ := http.NewRequest("POST", "/version/p1/3.1.2", nil)
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Body.String()).To(Equal("3.1.2"))
@@ -149,7 +149,7 @@ func TestGetVersionWithHandler(t *testing.T) {
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/versionManager/p1", nil)
+	req, _ := http.NewRequest("GET", "/version/p1", nil)
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Body.String()).To(Equal(model.NewVersion(1, 0, 0).String()))
@@ -164,7 +164,7 @@ func TestSetVersionWithValidationError(t *testing.T) {
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("POST", "/versionManager/p1/3.1.2.", nil)
+	req, _ := http.NewRequest("POST", "/version/p1/3.1.2.", nil)
 	router.ServeHTTP(res, req)
 
 	Ω.Expect(res.Code).To(Equal(400))

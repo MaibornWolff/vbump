@@ -34,7 +34,7 @@ func main() {
 	defer loggerWriter.Close()
 
 	listenAddr := kingpin.Flag("listen", "Address to listen on.").Short('l').Default(":8080").String()
-	dataDir := kingpin.Flag("datadir", "Directory path for storing versionManager files (must exist).").Short('d').Required().String()
+	dataDir := kingpin.Flag("datadir", "Directory path for storing version files (must exist).").Short('d').Required().String()
 	kingpin.Parse()
 
 	logger.Info("Server is starting...")
