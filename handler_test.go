@@ -15,8 +15,8 @@ func TestBumbMajor(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -30,8 +30,8 @@ func TestBumbMinor(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -45,8 +45,8 @@ func TestBumbPatch(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -60,8 +60,8 @@ func TestNumberOfVbumpMetric(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "init")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 	metrics, _ := http.NewRequest("GET", "/metrics", nil)
@@ -99,8 +99,8 @@ func TestBumbTransientPatch(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -114,8 +114,8 @@ func TestBumbTransientMinor(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -129,8 +129,8 @@ func TestSetVersion(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -144,8 +144,8 @@ func TestGetVersionWithHandler(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -159,8 +159,8 @@ func TestSetVersionWithValidationError(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewMock(model.NewVersion(1, 0, 0), "p1")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -174,8 +174,8 @@ func TestBumpMajorWithInvalidPath(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewFileProvider("dirnotexist")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -190,8 +190,8 @@ func TestBumpMinorWithInvalidPath(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewFileProvider("dirnotexist")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -206,8 +206,8 @@ func TestBumpPatchWithInvalidPath(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
 	fileProvider := adapter.NewFileProvider("dirnotexist")
-	version := service.NewVersionManager(fileProvider)
-	handler := NewHandler(version, nil)
+	versionManager := service.NewVersionManager(fileProvider)
+	handler := NewHandler(versionManager)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
@@ -221,7 +221,7 @@ func TestBumpPatchWithInvalidPath(t *testing.T) {
 func TestGetHealth(t *testing.T) {
 	Ω := NewGomegaWithT(t)
 
-	handler := NewHandler(nil, nil)
+	handler := NewHandler(nil)
 	router := handler.GetRouter()
 	res := httptest.NewRecorder()
 
