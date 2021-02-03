@@ -85,29 +85,39 @@ func (version Version) String() string {
 	return strings.Join(versionParts, separator)
 }
 
+func (part *versionPart) makePresent() {
+	part.isPresent = true
+}
+
+func (part *versionPart) increment() {
+	part.number++
+	part.makePresent()
+}
+
+func (part *versionPart) reset() {
+	part.number = 0
+}
+
 // BumpMajor bumps the version's major part
 func (version Version) BumpMajor() Version {
-	return Version{
-		versionPart{version.major.number + 1, true},
-		versionPart{0, version.minor.isPresent},
-		versionPart{0, version.patch.isPresent},
-	}
+	version.major.increment()
+	version.minor.reset()
+	version.patch.reset()
+	return version
 }
 
 // BumpMinor bumps the version's minor part
 func (version Version) BumpMinor() Version {
-	return Version{
-		versionPart{version.major.number, true},
-		versionPart{version.minor.number + 1, true},
-		versionPart{0, version.patch.isPresent},
-	}
+	version.major.makePresent()
+	version.minor.increment()
+	version.patch.reset()
+	return version
 }
 
 // BumpPatch bumps the version's patch part
 func (version Version) BumpPatch() Version {
-	return Version{
-		versionPart{version.major.number, true},
-		versionPart{version.minor.number, true},
-		versionPart{version.patch.number + 1, true},
-	}
+	version.major.makePresent()
+	version.minor.makePresent()
+	version.patch.increment()
+	return version
 }
