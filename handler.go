@@ -3,11 +3,12 @@ package main
 import (
 	"net/http"
 
+	"maibornwolff/vbump/service"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
-	"maibornwolff/vbump/service"
 )
 
 // Handler for handling http routes
@@ -28,7 +29,7 @@ func (handler *Handler) LoggerMiddleware() gin.HandlerFunc {
 		c.Next()
 		err := c.Errors.Last()
 		if err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("")
 		}
 	}
 }
