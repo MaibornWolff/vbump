@@ -9,12 +9,21 @@ image:
   tag: 1.3.0
   pullPolicy: Always
 
+deployment:
+  labels: {}
+  annotations: {}
+  pod:
+    labels: {} 
+    annotations: {}
+
 nameOverride: ""
 fullnameOverride: ""
 
 service:
   type: ClusterIP
   port: 80
+  labels: {}
+  annotations: {}
 
 ingress:
   enabled: false

@@ -7,6 +7,15 @@ metadata:
     helm.sh/chart: {{ include "vbump.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $value := .Values.deployment.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- if .Values.deployment.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.deployment.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -18,6 +27,15 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "vbump.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- range $key, $value := .Values.deployment.pod.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- if .Values.deployment.pod.annotations }}
+      annotations:
+        {{- range $key, $value := .Values.deployment.pod.annotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
     spec:
     {{- if .Values.persistence.enabled }}
       volumes:
