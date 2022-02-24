@@ -19,7 +19,7 @@ spec:
         app.kubernetes.io/name: {{ include "vbump.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-    {{- if .Values.persistence.enabled }}
+    {{- if and .Values.persistence .Values.persistence.enabled }}
       volumes:
         - name: pv-storage
           persistentVolumeClaim:
