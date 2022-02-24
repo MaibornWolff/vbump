@@ -31,6 +31,14 @@ persistence:
   enabled: true
   accessMode: ReadWriteOnce
   size: 5Mi
+  securityContext:
+    fsGroup: 101
+    fsGroupChangePolicy: "OnRootMismatch"
+
+containers:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 100
 
 resources:
   limits:
