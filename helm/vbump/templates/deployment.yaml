@@ -19,16 +19,34 @@ spec:
         app.kubernetes.io/name: {{ include "vbump.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-    {{- if .Values.persistence.enabled }}
+    {{- if and .Values.persistence .Values.persistence.enabled }}
       volumes:
         - name: pv-storage
           persistentVolumeClaim:
             claimName: {{ template "vbump.fullname" . }}
+      {{- if .Values.persistence.securityContext }}
+      securityContext:
+        {{- if .Values.persistence.securityContext.fsGroup }}
+        fsGroup: {{ .Values.persistence.securityContext.fsGroup }}
+        {{- end }}
+        {{- if .Values.persistence.securityContext.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.persistence.securityContext.fsGroupChangePolicy }} 
+        {{- end}}
+      {{- end }}
     {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if and .Values.containers .Values.containers.securityContext }}
+          securityContext: 
+            {{- if .Values.containers.securityContext.runAsNonRoot }}
+            runAsNonRoot: {{ .Values.containers.securityContext.runAsNonRoot }}
+            {{- end }}
+            {{- if .Values.containers.securityContext.runAsUser }}
+            runAsUser: {{ .Values.containers.securityContext.runAsUser }}
+            {{- end }}
+          {{- end }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
           - mountPath: "/data"

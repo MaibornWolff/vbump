@@ -10,8 +10,17 @@ RUN go test -v ./...
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
-COPY --from=builder /build/vbump /vbump
+
+# create non root user
+RUN addgroup -S nonroot && \
+    adduser -S nonroot -G nonroot
+
+COPY --chown=nonroot:nonroot --from=builder /build/vbump /vbump
+
 RUN mkdir /data
+RUN chown -R nonroot:nonroot /data
 ENTRYPOINT ./vbump -d data
-LABEL Name=vbump Version=1.3.0
+LABEL Name=vbump Version=1.4.0
 EXPOSE 8080
+
+USER nonroot
