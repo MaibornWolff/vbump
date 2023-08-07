@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.18-alpine as builder
 RUN apk update && apk add build-base
 RUN mkdir /build
 WORKDIR /build
